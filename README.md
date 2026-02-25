@@ -19,7 +19,12 @@ Ejecución en modo desarrollo (recomendada)
     ```
     (Windows: copiar manualmente o usar PowerShell `Copy-Item`)
 
-2. Levante los servicios con Docker Compose (se compilan y arranca en modo desarrollo según `docker-compose.yml`):
+2. Inicializar y actualizar sub-módulos de Git (si es la primera vez que clona el repositorio):
+    ```
+    git submodule update --init --recursive
+    ```
+
+3. Levante los servicios con Docker Compose (se compilan y arranca en modo desarrollo según `docker-compose.yml`):
 	```
     docker-compose up --build
     ```
