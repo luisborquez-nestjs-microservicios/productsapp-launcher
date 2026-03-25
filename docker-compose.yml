@@ -1,9 +1,11 @@
 services:
+  # NATS Server
   nats-server:
     image: nats:latest
     ports:
       - 8222:8222
 
+  # API Client Gateway
   client-gateway:
     build: ./client-gateway
     ports:
@@ -12,9 +14,10 @@ services:
       - ./client-gateway/src:/usr/src/app/src
     command: npm run start:dev
     environment:
-      - PORT=3000
+      - PORT=${CLIENT_GATEWAY_PORT}
       - NATS_SERVERS=nats://nats-server:4222
 
+  # Products Microservice
   products-ms:
     build: ./products-ms
     volumes:
@@ -25,6 +28,7 @@ services:
       - NATS_SERVERS=nats://nats-server:4222
       - DATABASE_URL=file:./dev.db
 
+  # Orders Microservice
   orders-ms:
     depends_on:
       - orders-db
@@ -37,6 +41,7 @@ services:
       - NATS_SERVERS=nats://nats-server:4222
       - POSTGRES_URL=postgresql://${ORDERSDB_USER}:${ORDERSDB_PASSWORD}@orders-db:5432/${ORDERSDB_DB}
 
+  # Orders Database
   orders-db:
     container_name: orders_database
     image: postgres:16.11
@@ -48,3 +53,19 @@ services:
       - ./orders-ms/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
+
+  # Payments Microservice
+  payments-ms:
+    build: ./payments-ms
+    ports:
+      - ${PAYMENTS_MS_PORT}:${PAYMENTS_MS_PORT}
+    volumes:
+      - ./payments-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - PORT=${PAYMENTS_MS_PORT}
+      - STRIPE_SECRET=${PAYMENTS_MS_STRIPE_SECRET}
+      - STRIPE_WEBHOOK_SECRET=${PAYMENTS_MS_STRIPE_WEBHOOK_SECRET}
+      - STRIPE_SUCCESS_URL=${PAYMENTS_MS_STRIPE_SUCCESS_URL}
+      - STRIPE_CANCEL_URL=${PAYMENTS_MS_STRIPE_CANCEL_URL}
+      - NATS_SERVERS=nats://nats-server:4222
