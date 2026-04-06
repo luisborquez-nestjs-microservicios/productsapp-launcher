@@ -69,3 +69,14 @@ services:
       - STRIPE_SUCCESS_URL=${PAYMENTS_MS_STRIPE_SUCCESS_URL}
       - STRIPE_CANCEL_URL=${PAYMENTS_MS_STRIPE_CANCEL_URL}
       - NATS_SERVERS=nats://nats-server:4222
+
+  # Auth Microservice
+  auth-ms:
+    build: ./auth-ms
+    volumes:
+      - ./auth-ms/src:/usr/src/app/src
+    command: npm run start:dev
+    environment:
+      - NATS_SERVERS=nats://nats-server:4222
+      - AUTHDB_URL=${AUTHMS_AUTHDB_URL}
+      - JWT_SECRET=${AUTHMS_JWT_SECRET}
